@@ -1,0 +1,132 @@
+const canvas = document.getElementById('spaceCanvas');
+const ctx = canvas.getContext('2d');
+
+const spaceshipSize = 30;
+const hexagonRadius = 50;
+const hexagonColor = 'rgba(255, 255, 255, 1)';
+const hexagonBorderColor = 'rgba(0, 0, 0, 1)';
+const selectedHexagonColor = 'rgba(0, 255, 0, 0.5)';
+const spaceshipImageSrc = 'D:\\Space Game\\SpaceShuttle1.png';
+
+const spaceships = [
+  { x: 100, y: 100, team: 1, angle: 0 },
+  { x: 200, y: 200, team: 1, angle: 0 },
+  { x: 300, y: 300, team: 1, angle: 0 },
+  { x: 500, y: 100, team: 2, angle: 0 },
+  { x: 600, y: 200, team: 2, angle: 0 },
+  { x: 700, y: 300, team: 2, angle: 0 },
+];
+
+const asteroids = [
+  { x: 400, y: 400 },
+  // Add more asteroids as needed
+];
+
+const spaceshipImage = new Image();
+
+spaceshipImage.onload = function () {
+  draw();
+};
+
+spaceshipImage.src = spaceshipImageSrc;
+
+let selectedSpaceship = null;
+
+function drawSpaceship(x, y, team, angle) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(angle);
+  ctx.drawImage(spaceshipImage, -spaceshipSize / 2, -spaceshipSize / 2, spaceshipSize, spaceshipSize);
+  ctx.restore();
+}
+
+function drawAsteroid(x, y) {
+  ctx.fillStyle = 'gray';
+  ctx.beginPath();
+  ctx.arc(x, y, 20, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+function drawHexagon(x, y, borderColor, fillColor) {
+  ctx.fillStyle = fillColor;
+  ctx.beginPath();
+  for (let i = 0; i < 6; i++) {
+    const angle = (Math.PI / 3) * i;
+    const hexagonX = x + hexagonRadius * Math.cos(angle);
+    const hexagonY = y + hexagonRadius * Math.sin(angle);
+    ctx.lineTo(hexagonX, hexagonY);
+  }
+  ctx.closePath();
+  ctx.fill();
+
+  // Draw border
+  ctx.strokeStyle = borderColor;
+  ctx.lineWidth = 2;
+  ctx.stroke();
+}
+
+function drawHexagonPattern() {
+  const hexagonWidth = hexagonRadius * Math.sqrt(3);
+  const hexagonHeight = hexagonRadius * 2;
+
+  for (let x = 0; x < canvas.width + hexagonWidth; x += hexagonWidth * 3 / 2) {
+    for (let y = 0; y < canvas.height + hexagonHeight; y += hexagonHeight * 3 / 4) {
+      drawHexagon(x, y, hexagonBorderColor, hexagonColor);
+    }
+  }
+}
+
+function draw() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // Draw asteroids
+  asteroids.forEach(asteroid => drawAsteroid(asteroid.x, asteroid.y));
+
+  // Draw hexagon pattern
+  drawHexagonPattern();
+
+  // Draw spaceships
+  spaceships.forEach(spaceship => drawSpaceship(spaceship.x, spaceship.y, spaceship.team, spaceship.angle));
+}
+
+function getMousePos(canvas, event) {
+  const rect = canvas.getBoundingClientRect();
+  return {
+    x: event.clientX - rect.left,
+    y: event.clientY - rect.top
+  };
+}
+
+canvas.addEventListener('mousedown', function (event) {
+  const mousePos = getMousePos(canvas, event);
+
+  // Check if clicked on a spaceship
+  spaceships.forEach(spaceship => {
+    const distance = Math.sqrt(Math.pow(mousePos.x - spaceship.x, 2) + Math.pow(mousePos.y - spaceship.y, 2));
+    if (distance <= spaceshipSize / 2) {
+      selectedSpaceship = spaceship;
+    }
+  });
+
+  draw();
+});
+
+canvas.addEventListener('mouseup', function (event) {
+  if (selectedSpaceship) {
+    const mousePos = getMousePos(canvas, event);
+    selectedSpaceship.x = mousePos.x;
+    selectedSpaceship.y = mousePos.y;
+    selectedSpaceship = null;
+  }
+
+  draw();
+});
+
+canvas.addEventListener('mousemove', function () {
+  if (selectedSpaceship) {
+    draw();
+  }
+});
+
+// Initial draw
+draw();
