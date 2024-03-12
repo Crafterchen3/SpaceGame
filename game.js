@@ -1,15 +1,18 @@
 const canvas = document.getElementById('spaceCanvas');
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
 const ctx = canvas.getContext('2d');
 
 const spaceshipSize = 30;
-const hexagonRadius = 50;
+const hexagonRadius = 30;
 const hexagonColor = 'rgba(255, 255, 255, 1)';
 const hexagonBorderColor = 'rgba(0, 0, 0, 1)';
 const selectedHexagonColor = 'rgba(0, 255, 0, 0.5)';
 const spaceshipImageSrc = 'SpaceShuttle1.png';
+const hexagonSize = 3;
 
 const spaceships = [
-  { x: 50, y: 50, team: 1, angle: 0 },
+  { x: 30, y: 30, team: 1, angle: 0 },  //eigentlich 50 50
   { x: 200, y: 50, team: 1, angle: 0 },
   { x: 275, y: 100, team: 1, angle: 0 },
   { x: 350, y: 50, team: 2, angle: 0 },
@@ -93,41 +96,107 @@ function getMousePos(canvas, event) {
   };
 }
 
-function calculateAllHexagons() {
-  const allHexagons = [];
+function Array2D(x, y) {
+  let arr = Array(x);
+  for (let i = 0; i < x; i++) {
+    arr[i] = Array(y);
+  }
+  return arr;
+}
+
+let width = 1
+let height = 1
+
+function calculateMaxBoundsdidauns(){
   for (let x = hexagonRadius; x < canvas.width; x += hexagonRadius * 3) {
-    for (let y = hexagonRadius; y < canvas.height; y += (hexagonRadius * Math.sqrt(3))) {
-      allHexagons.push({ x, y, color: hexagonColor });
+    height = 1
+    width++
+    for (let y = hexagonRadius; y < canvas.height; y += (hexagonRadius * Math.sqrt(3))) {  
+      height++
+      console.log(width,height,x,y)
     }
   }
-  for (let x = hexagonRadius + 75; x < canvas.width; x += hexagonRadius * 3) {
-    for (let y = hexagonRadius + 50; y < canvas.height; y += (hexagonRadius * Math.sqrt(3))) {
-      allHexagons.push({ x, y, color: hexagonColor});
+}
+calculateMaxBoundsdidauns()
+
+function calculateAllHexagons() {
+  const allHexagons = Array2D(width, height);
+  const all1d = []
+  for (let ix = 0; ix < width; ix += 2) {
+    let x = hexagonRadius + hexagonRadius * hexagonSize * ix / 2
+    for (let iy = 0; iy < height; iy++) {
+      let y = hexagonRadius + (hexagonRadius * Math.sqrt(hexagonSize)) * iy
+      let hexagon = { x, y, color: hexagonColor };
+      allHexagons[ix][iy] = hexagon;
+      all1d.push(hexagon)
     }
   }
-  function setHexagonColorAt(x,y,color){  //Paul ist geil
-    try{
-      const hexagon = allHexagons.find(e => e.x === x && e.y === y)       //find hexagon space ship is on and sets colour
-      hexagon.color = color
-    }catch{
-      //Paul wurde gefangen
+  for (let ix = 1; ix < width; ix += 2) {
+    const x = hexagonRadius + hexagonRadius * hexagonSize / 2 + hexagonRadius * hexagonSize * (ix - 1) / 2
+    for (let iy = 0; iy < height; iy++) {
+      const y = hexagonRadius + hexagonRadius * Math.sqrt(hexagonSize) / 2 + hexagonRadius * Math.sqrt(hexagonSize) * iy
+      const hexagon = { x, y, color: hexagonColor };
+      allHexagons[ix][iy] = hexagon;
+      all1d.push(hexagon)
     }
   }
 
-  //find hexagon of spaceship
-  const x = selectedSpaceship.x
-  const y = selectedSpaceship.y
-  setHexagonColorAt(x,y,"lightgreen")
-  setHexagonColorAt(x,y+(hexagonRadius * Math.sqrt(3)),"yellow")
-  setHexagonColorAt(x,y+((hexagonRadius * Math.sqrt(3))*2),"yellow")
-  setHexagonColorAt(x,y-(hexagonRadius * Math.sqrt(3)),"yellow")
-  setHexagonColorAt(x,y-((hexagonRadius * Math.sqrt(3))*2),"yellow")
-  
 
+  function getSpaceShipIndex() {
+    for (let ix = 0; ix < allHexagons.length; ix++) {
+      const arr1 = allHexagons[ix];
+      for (let iy = 0; iy < arr1.length; iy++) {
+        const spaceship = arr1[iy];
+        if (spaceship.x === selectedSpaceship.x && spaceship.y === selectedSpaceship.y) {
+          return { ix, iy };
+        }
+      }
+    }
+  }
 
-  
+  function setHexagonColor(x, y, color) {
+    try {
+      allHexagons[x][y].color = color
+    } catch (error) {
 
-  return allHexagons;
+    }
+  }
+
+  const pos = getSpaceShipIndex();
+  const x = pos.ix;
+  const y = pos.iy;
+  setHexagonColor(x, y, "lightgreen")
+  setHexagonColor(x, y + 1, "yellow")
+  setHexagonColor(x, y + 2, "yellow")
+  setHexagonColor(x, y - 1, "yellow")
+  setHexagonColor(x, y - 2, "yellow")
+  if (x % 2 === 0) {
+    setHexagonColor(x + 1, y, "yellow")
+    setHexagonColor(x + 1, y + 1, "yellow")
+    setHexagonColor(x + 1, y - 1, "yellow")
+    setHexagonColor(x + 1, y - 2, "yellow")
+    setHexagonColor(x - 1, y, "yellow")
+    setHexagonColor(x - 1, y + 1, "yellow")
+    setHexagonColor(x - 1, y - 1, "yellow")
+    setHexagonColor(x - 1, y - 2, "yellow")
+  } else {
+    setHexagonColor(x + 1, y, "yellow")
+    setHexagonColor(x + 1, y + 1, "yellow")
+    setHexagonColor(x + 1, y + 2, "yellow")
+    setHexagonColor(x + 1, y - 1, "yellow")
+    setHexagonColor(x - 1, y, "yellow")
+    setHexagonColor(x - 1, y + 1, "yellow")
+    setHexagonColor(x - 1, y + 2, "yellow")
+    setHexagonColor(x - 1, y - 1, "yellow")
+  }
+  setHexagonColor(x + 2, y, "yellow")
+  setHexagonColor(x + 2, y + 1, "yellow")
+  setHexagonColor(x + 2, y - 1, "yellow")
+  setHexagonColor(x - 2, y, "yellow")
+  setHexagonColor(x - 2, y + 1, "yellow")
+  setHexagonColor(x - 2, y - 1, "yellow")
+
+  return all1d;
 }
 
 function findHexagonUnderMouse(mousePos) {
@@ -148,7 +217,7 @@ canvas.addEventListener('mousedown', function (event) {
   // Check if clicked inside a hexagon
   if (hexagonOverlayVisible) {
     const clickedHexagon = findHexagonUnderMouse(mousePos);
-    if (clickedHexagon) {
+    if (clickedHexagon && clickedHexagon.color == "yellow") {
       selectedSpaceship.x = clickedHexagon.x;
       selectedSpaceship.y = clickedHexagon.y;
       hexagonOverlayVisible = false;
@@ -160,7 +229,7 @@ canvas.addEventListener('mousedown', function (event) {
 
   // Check if clicked on a spaceship
   spaceships.forEach(spaceship => {
-    if (mousePos.x >= spaceship.x - (spaceshipSize/2) && mousePos.x <= spaceship.x + (spaceshipSize/2) && mousePos.y >= spaceship.y - (spaceshipSize/2) && mousePos.y <= spaceship.y + (spaceshipSize/2)) {
+    if (mousePos.x >= spaceship.x - (spaceshipSize / 2) && mousePos.x <= spaceship.x + (spaceshipSize / 2) && mousePos.y >= spaceship.y - (spaceshipSize / 2) && mousePos.y <= spaceship.y + (spaceshipSize / 2)) {
       if (selectedSpaceship === spaceship) {
         hexagonOverlayVisible = !hexagonOverlayVisible;
       } else {
