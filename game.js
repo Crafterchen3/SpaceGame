@@ -107,13 +107,11 @@ function Array2D(x, y) {
 let width = 1
 let height = 1
 
-function calculateMaxBoundsdidauns(){
-  for (let x = hexagonRadius; x < canvas.width; x += hexagonRadius * 3) {
-    height = 1
-    width++
-    for (let y = hexagonRadius; y < canvas.height; y += (hexagonRadius * Math.sqrt(3))) {  
-      height++
-      console.log(width,height,x,y)
+function calculateMaxBoundsdidauns() {
+  for (let x = hexagonRadius; x < canvas.width; x += hexagonRadius * 1.5) {    //es war wegen der 3 es muss 1.5 sein weil sonst ist es nur die hälfte vom Canvas jk. Musst schon zugeben dass ich geil bin
+    width++;                                                                    //btw ChatGPT hat mir 3 mal genau den selben Code geschickt und nix verändert.... Useless af
+    for (let y = hexagonRadius; y < canvas.height; y += (hexagonRadius * Math.sqrt(3))) {
+      height++;
     }
   }
 }
